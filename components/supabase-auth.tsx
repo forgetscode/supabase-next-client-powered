@@ -1,7 +1,7 @@
 import { useSession } from "@supabase/auth-helpers-react";
 import { Auth, ThemeSupa } from "@supabase/auth-ui-react";
 import React, { FCWithChildren } from "react";
-import { useSupabase } from "#/hooks/useSupabase";
+import { useSupabase } from "#/hooks/use-supabase";
 
 /** @desc This is a temporary component for forcing supabase login before child components are rendered. */
 export const SupabaseAuth: FCWithChildren = ({ children }) => {

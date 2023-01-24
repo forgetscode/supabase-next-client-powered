@@ -1,7 +1,7 @@
 import { TableInsert, TableRow } from "#/types/supabase";
 import { User, useUser } from "@supabase/auth-helpers-react";
 import { createContext, FCWithChildren, useContext, useEffect, useMemo, useState } from "react";
-import { useSupabase } from "#/hooks/useSupabase";
+import { useSupabase } from "#/hooks/use-supabase";
 
 type PublicProfile = TableInsert<"profiles", true>;
 type PrivateProfile = TableInsert<"profiles_private", true>;

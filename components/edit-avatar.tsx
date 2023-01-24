@@ -1,6 +1,6 @@
 import { ChangeEventHandler, useCallback, useEffect, useState } from 'react';
 import Image from "next/image";
-import { useSupabase } from "#/hooks/useSupabase";
+import { useSupabase } from "#/hooks/use-supabase";
 import { useUser } from "@supabase/auth-helpers-react";
 
 export interface Props {

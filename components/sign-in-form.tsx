@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Blob } from './blob';
-import { useSupabase } from "#/hooks/useSupabase";
+import { useSupabase } from "#/hooks/use-supabase";
 import { serverURI } from "#/constants/environment";
 const Fade = require("react-reveal/Fade");
 

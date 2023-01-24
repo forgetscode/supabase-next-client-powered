@@ -4,7 +4,7 @@ import { useState, useEffect, JSXComponent, useCallback } from 'react';
 import { EditAvatar } from './edit-avatar';
 import { Blob } from './blob';
 import { useSession, useUser } from "@supabase/auth-helpers-react";
-import { useSupabase } from "#/hooks/useSupabase";
+import { useSupabase } from "#/hooks/use-supabase";
 import { TableInsert } from '#/types/supabase';
 import { useUserProfile } from "#/hooks/with-react-context/use-profile";
 const Fade = require("react-reveal/Fade");
