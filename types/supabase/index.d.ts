@@ -2,6 +2,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "./supabase";
 import * as _supabase_supabase_js_dist_module_lib_types from "@supabase/supabase-js/dist/module/lib/types";
 import { TenantSchemaTemplateName } from "#/constants/meta";
+
 export * from "./supabase"
 declare module "./supabase" {
   export type TenantDB<SchemaName extends keyof Database> =

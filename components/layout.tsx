@@ -1,8 +1,6 @@
-import { AuthSession } from '@supabase/supabase-js';
 import Head from 'next/head';
 import Link from 'next/link';
 import React, { FCWithChildren } from 'react';
-import Image from "next/image";
 import { icon, title } from "#/constants/meta";
 
 export const Layout: FCWithChildren = ({ children }) => (

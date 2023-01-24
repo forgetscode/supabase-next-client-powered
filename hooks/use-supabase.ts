@@ -1,6 +1,7 @@
 import { Database } from "#/types/supabase";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TenantSchemaTemplateName } from "#/constants/meta";
+
 const { useSupabaseClient } = require("@supabase/auth-helpers-react");
 
 /**

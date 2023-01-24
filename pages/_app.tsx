@@ -5,7 +5,6 @@ import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { HookProviders } from "#/hooks/with-react-context";
 import { Layout } from "#/components/layout";
 import { createSupabaseBrowserClient } from "#/lib/supabase-clients";
-import { SupabaseAuth } from "#/components/supabase-auth";
 
 const supabase = createSupabaseBrowserClient();
 const _App = ({ Component, pageProps }: AppProps) => (

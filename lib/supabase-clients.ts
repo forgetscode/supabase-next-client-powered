@@ -1,7 +1,6 @@
-import { headers, cookies } from 'next/headers';
-import { createServerComponentSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { cookies, headers } from 'next/headers';
+import { createBrowserSupabaseClient, createServerComponentSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from "#/types/supabase";
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 export const createSupabaseServerClient = () =>
   createServerComponentSupabaseClient<Database>({

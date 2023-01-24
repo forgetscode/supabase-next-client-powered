@@ -1,4 +1,4 @@
-import { TableInsert, TableRow } from "#/types/supabase";
+import { TableInsert } from "#/types/supabase";
 import { User, useUser } from "@supabase/auth-helpers-react";
 import { createContext, FCWithChildren, useContext, useEffect, useMemo, useState } from "react";
 import { useSupabase } from "#/hooks/use-supabase";
