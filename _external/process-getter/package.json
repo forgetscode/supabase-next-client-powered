@@ -1,0 +1,8 @@
+{
+  "name": "process-getter",
+  "version": "1.0.0",
+  "types": "globals.d.ts",
+  "main": "index.ts",
+  "dependencies": {
+  }
+}

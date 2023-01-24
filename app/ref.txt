@@ -1,0 +1,6 @@
+for creating server components...
+
+[see this for supabase specific stuff](https://supabase.com/docs/guides/auth/auth-helpers/nextjs-server-components)
+
+[and this for nextjs specific stuff](https://nextjs.org/docs/advanced-features/react-18/server-components)
+

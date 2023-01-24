@@ -1,0 +1,13 @@
+diff --git a/node_modules/@supabase/auth-ui-react/dist/esm/src/components/Auth/Auth.d.ts b/node_modules/@supabase/auth-ui-react/dist/esm/src/components/Auth/Auth.d.ts
+index 0b517e2..583dde5 100644
+--- a/node_modules/@supabase/auth-ui-react/dist/esm/src/components/Auth/Auth.d.ts
++++ b/node_modules/@supabase/auth-ui-react/dist/esm/src/components/Auth/Auth.d.ts
+@@ -7,7 +7,7 @@ declare namespace Auth {
+     var UpdatePassword: typeof import("./interfaces/UpdatePassword").UpdatePassword;
+     var MagicLink: typeof import("./interfaces/MagicLink").MagicLink;
+     var UserContextProvider: (props: import("./UserContext").Props) => JSX.Element;
+-    var useUser: () => import("./UserContext").AuthSession;
++    // var useUser: () => import("./UserContext").AuthSession;
+ }
+ export default Auth;
+ //# sourceMappingURL=Auth.d.ts.map
