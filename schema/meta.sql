@@ -2,6 +2,7 @@
 create extension if not exists citext;
 create extension if not exists "uuid-ossp";
 
+-- TODO: add created_on and updated_on columns to shit
 -- TODO: should this be wrapped in a function?
 -- [largely from this file](https://github.com/jensen/vote-now/blob/main/src/services/schema/tables.sql)
 -- Users
@@ -15,6 +16,7 @@ set search_path to meta;
 drop table if exists tenant;
   create table tenant (
       id uuid primary key default uuid_generate_v4(),
+      tenant_name text not null,
       schema_path text not null,
       owner_profile_id uuid
   );

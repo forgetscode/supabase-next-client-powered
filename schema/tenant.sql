@@ -1,12 +1,11 @@
 
 
 drop function if exists create_tenant_schema;
-  create or replace function create_tenant_schema(tenant_name text, owner_profile_id uuid) returns void as $$
+  create or replace function create_tenant_schema(new_tenant_name text, input_owner_profile_id uuid) returns void as $$
   declare
     tenant_uuid uuid;
     schema_path text;
   begin
-
     -- generate a random uuid for the tenant
     select gen_random_uuid() into tenant_uuid;
     -- get a string version of the uuid for use as the schema name
@@ -130,12 +129,12 @@ drop function if exists create_tenant_schema;
       end; $$ language plpgsql security definer set search_path = schema_path;
 
     -- create row in meta tenant table to store information about the created schema
-    insert into meta.tenant(id, schema_path, owner_profile_id)
-    values (tenant_uuid, schema_path, owner_profile_id);
+    insert into meta.tenant(id, new_tenant_name, schema_path, owner_profile_id)
+    values (tenant_uuid, schema_path, input_owner_profile_id);
 
     -- create a mapping between the owner of the tenant and the tenant
     insert into meta.tenant_profile_mapping(profile_id, tenant_id)
-    values (owner_profile_id, tenant_uuid);
+    values (input_owner_profile_id, tenant_uuid);
 
     drop table if exists role;
       create table role (
