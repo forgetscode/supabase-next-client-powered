@@ -170,7 +170,7 @@ drop function if exists create_tenant_schema;
         profile_id uuid not null,
         role_id uuid not null
       );
-    meta.insert_table_meta("role", "role");
+    meta.insert_table_meta("role_profile_mapping", "role");
 
     -- table holding one whitelist or blacklist permission for one user profile for one individual record
     drop table if exists profile_permission;
@@ -184,7 +184,7 @@ drop function if exists create_tenant_schema;
         can_update boolean not null,
         can_delete boolean not null
       );
-    meta.insert_table_meta("role", "role");
+    meta.insert_table_meta("profile_permission", "role");
 
     alter table role
       enable row level security;
