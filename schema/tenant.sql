@@ -1,15 +1,4 @@
 
-drop function if exists insert_table_meta;
-  create or replace function insert_table_meta(
-      input_table_name text,
-      input_table_type tenant_schema_table_type
-  ) returns void as $$
-    insert into tenant_schema_table_info(table_name, table_type)
-    values (input_table_name, input_table_type)
-    on conflict (table_name) do update
-      set table_name = input_table_name,
-          table_type = input_table_type;
-  $$ language plpgsql;
 
 drop function if exists create_tenant_schema;
   create or replace function create_tenant_schema(tenant_name text, owner_profile_id uuid) returns void as $$
@@ -57,7 +46,7 @@ drop function if exists create_tenant_schema;
           end loop;
         end loop;
         return false;
-      end; $$ language plpgsql;
+      end; $$ language plpgsql security definer set search_path = search_path;
 
     -- function to check permissions associated with the user's roles
     drop function if exists check_role_permission;
@@ -88,7 +77,7 @@ drop function if exists create_tenant_schema;
           end loop;
         end loop;
         return false;
-      end; $$ language plpgsql;
+      end; $$ language plpgsql security definer set search_path = search_path;
 
     create type if not exists check_profile_permission_result AS ENUM ('whitelisted', 'blacklisted', 'none');
     -- function to check profile permissions when doing update/insert/delete on a row
@@ -120,25 +109,25 @@ drop function if exists create_tenant_schema;
           end if;
         end if;
         return 'none';
-      end; $$ language plpgsql;
+      end; $$ language plpgsql security definer set search_path = search_path;
 
-      -- function which combines logic for checking permissions based on profile-level permissions and role-level permissions.
-      -- if profile_permissions has a row describing a permission, it takes precedence and the query should be allowed or
-      -- disallowed according to what it specifies. if there is no relevant profile_permission, check role permissions.
-      drop function if exists check_permissions;
-        create or replace function check_permissions(in input_profile_id uuid, in wanted_table_name text, in operation text, in row_id uuid) returns boolean as $$
-        declare
-          profile_permission_result check_profile_permission_result;
-        begin
-          profile_permission_result := check_profile_permission(input_profile_id, wanted_table_name, operation, row_id);
-          if profile_permission_result = 'whitelisted' then
-            return true;
-          elseif profile_permission_result = 'blacklisted' then
-            return false;
-          else
-            return check_role_permission(input_profile_id, wanted_table_name, operation);
-          end if;
-        end; $$ language plpgsql;
+    -- function which combines logic for checking permissions based on profile-level permissions and role-level permissions.
+    -- if profile_permissions has a row describing a permission, it takes precedence and the query should be allowed or
+    -- disallowed according to what it specifies. if there is no relevant profile_permission, check role permissions.
+    drop function if exists check_permissions;
+      create or replace function check_permissions(in input_profile_id uuid, in wanted_table_name text, in operation text, in row_id uuid) returns boolean as $$
+      declare
+        profile_permission_result check_profile_permission_result;
+      begin
+        profile_permission_result := check_profile_permission(input_profile_id, wanted_table_name, operation, row_id);
+        if profile_permission_result = 'whitelisted' then
+          return true;
+        elseif profile_permission_result = 'blacklisted' then
+          return false;
+        else
+          return check_role_permission(input_profile_id, wanted_table_name, operation);
+        end if;
+      end; $$ language plpgsql security definer set search_path = search_path;
 
     -- create row in meta tenant table to store information about the created schema
     insert into meta.tenant(id, schema_path, owner_profile_id)
@@ -160,7 +149,7 @@ drop function if exists create_tenant_schema;
         can_delete_roles boolean not null default false,
         canConfigureTenant boolean not null default false
       );
-    insert_table_meta("role", "role");
+    meta.meta.insert_table_meta("role", "role");
 
     -- table holding rows with one permission for a table in one role
     drop table if exists role_permission;
@@ -173,7 +162,7 @@ drop function if exists create_tenant_schema;
         can_update boolean not null,
         can_delete boolean not null
       );
-    insert_table_meta("role_permission", "role");
+    meta.insert_table_meta("role_permission", "role");
 
     -- mapping between user profiles and roles
     drop table if exists role_profile_mapping;
@@ -182,7 +171,7 @@ drop function if exists create_tenant_schema;
         profile_id uuid not null,
         role_id uuid not null
       );
-    insert_table_meta("role", "role");
+    meta.insert_table_meta("role", "role");
 
     -- table holding one whitelist or blacklist permission for one user profile for one individual record
     drop table if exists profile_permission;
@@ -196,7 +185,7 @@ drop function if exists create_tenant_schema;
         can_update boolean not null,
         can_delete boolean not null
       );
-    insert_table_meta("role", "role");
+    meta.insert_table_meta("role", "role");
 
     alter table role
       enable row level security;
@@ -276,7 +265,7 @@ drop function if exists create_tenant_schema;
              )
            )
       )
-    insert_table_meta("qbo_customer", "auto");
+    meta.insert_table_meta("qbo_customer", "auto");
 
     alter table qbo_customer
       enable row level security;
