@@ -2,6 +2,7 @@
 create extension if not exists citext;
 create extension if not exists "uuid-ossp";
 
+-- TODO: should this be wrapped in a function?
 -- [largely from this file](https://github.com/jensen/vote-now/blob/main/src/services/schema/tables.sql)
 -- Users
 create schema if not exists "meta";
@@ -81,6 +82,18 @@ alter table profile_private
   enable row level security;
 
 -- FUNCTIONS ---------------------------------------------------------------------
+drop function if exists insert_table_meta;
+  create or replace function insert_table_meta(
+      input_table_name text,
+      input_table_type tenant_schema_table_type
+  ) returns void as $$
+    insert into tenant_schema_table_info(table_name, table_type)
+    values (input_table_name, input_table_type)
+    on conflict (table_name) do update
+      set table_name = input_table_name,
+          table_type = input_table_type;
+  $$ language plpgsql security definer set search_path = meta;
+
 drop function if exists has_tenant_schema_access;
   create or replace function has_tenant_schema_access(schema_name text) returns boolean AS $$
   begin
