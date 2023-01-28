@@ -149,7 +149,7 @@ drop function if exists create_tenant_schema;
         can_delete_roles boolean not null default false,
         canConfigureTenant boolean not null default false
       );
-    meta.meta.insert_table_meta("role", "role");
+    meta.insert_table_meta("role", "role");
 
     -- table holding rows with one permission for a table in one role
     drop table if exists role_permission;
