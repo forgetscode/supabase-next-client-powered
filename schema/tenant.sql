@@ -178,7 +178,7 @@ drop function if exists create_tenant_schema;
         id uuid primary key default uuid_generate_v4(),
         profile_id uuid not null,
         table_name text not null,
-        row_id uuid not null,
+        row_id uuid not null unique,
         can_create boolean not null, -- TODO: does can_create make sense for this?
         can_read boolean not null,
         can_update boolean not null,
