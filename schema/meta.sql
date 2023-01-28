@@ -3,7 +3,6 @@ create extension if not exists citext;
 create extension if not exists "uuid-ossp";
 
 -- TODO: add created_on and updated_on columns to shit
--- TODO: should this be wrapped in a function?
 -- [largely from this file](https://github.com/jensen/vote-now/blob/main/src/services/schema/tables.sql)
 -- Users
 create schema if not exists "meta";
@@ -48,27 +47,26 @@ drop table if exists profile_private;
     admin boolean default false not null
   );
 
-create type if not exists tenant_schema_table_type AS ENUM ('auto', 'role');
+ create type if not exists tenant_schema_table_type AS ENUM ('general', 'role');
 
--- table which stores meta information about tables in tenant schemas, like
---  whether or not they should be included in the auto generation of
---  policies (tables which dont govern permissions and are visible to our customers)
-drop table if exists tenant_schema_table_info;
-  create table tenant_schema_table_info (
-    id uuid primary key default uuid_generate_v4(),
-    table_name text not null unique,
-    table_type tenant_schema_table_type not null
-  );
-
--- a store of json schemas in json-schema format that are being used for validating
---  json strings stored in columns on tables in tenant schemas
-drop table if exists json_schema_store;
-  create table json_schema_store (
+ -- table which stores meta information about tables in tenant schemas, like
+ -- whether they should have can update role permissions, or general permissions added
+ drop table if exists tenant_schema_table_info;
+   create table tenant_schema_table_info (
      id uuid primary key default uuid_generate_v4(),
-     table_name text not null, -- TODO: write function which checks if this already exists or not before inserting
-     table_column text not null,
-     json_schema jsonp not null
-  );
+     table_name text not null unique,
+     table_type tenant_schema_table_type not null
+   );
+
+-- -- a store of json schemas in json-schema format that are being used for validating
+-- --  json strings stored in columns on tables in tenant schemas
+-- drop table if exists json_schema_store;
+--   create table json_schema_store (
+--      id uuid primary key default uuid_generate_v4(),
+--      table_name text not null, -- TODO: write function which checks if this already exists or not before inserting
+--      table_column text not null,
+--      json_schema jsonp not null
+--   );
 
 -- TABLE ALTERATIONS ---------------------------------------------------------------------
 alter table tenant
@@ -85,16 +83,16 @@ alter table profile_private
 
 -- FUNCTIONS ---------------------------------------------------------------------
 drop function if exists insert_table_meta;
-  create or replace function insert_table_meta(
-      input_table_name text,
-      input_table_type tenant_schema_table_type
-  ) returns void as $$
-    insert into tenant_schema_table_info(table_name, table_type)
-    values (input_table_name, input_table_type)
-    on conflict (table_name) do update
-      set table_name = input_table_name,
-          table_type = input_table_type;
-  $$ language plpgsql security definer set search_path = meta;
+ create or replace function insert_table_meta(
+     input_table_name text,
+     input_table_type tenant_schema_table_type
+ ) returns void as $$
+   insert into tenant_schema_table_info(table_name, table_type)
+   values (input_table_name, input_table_type)
+   on conflict (table_name) do update
+     set table_name = input_table_name,
+         table_type = input_table_type;
+ $$ language plpgsql security definer set search_path = meta;
 
 drop function if exists has_tenant_schema_access;
   create or replace function has_tenant_schema_access(schema_name text) returns boolean AS $$
@@ -108,7 +106,7 @@ drop function if exists has_tenant_schema_access;
   end;
   $$ language plpgsql security definer set search_path = meta;
 
-drop function if exists get_is_admin();
+drop function if exists get_is_admin;
   create or replace function get_is_admin() returns boolean as $$
     select profile_private.admin
     from profile_private
@@ -119,7 +117,7 @@ drop function if exists get_is_admin();
 /** NOTE: when you end a function with "$$ language plpgsql security definer set search_path = public", it means that within the context
     of the function's execution, the search_path will be set to public. */
 
-drop function if exists handle_new_user();
+drop function if exists handle_new_user;
   create function handle_new_user() returns trigger as $$
   begin
     insert into profile (id, name, avatar)
@@ -139,7 +137,7 @@ drop function if exists handle_new_user();
   end;
   $$ language plpgsql security definer set search_path = meta;
 
-drop function if exists handle_update_user();
+drop function if exists handle_update_user;
   create or replace function handle_update_user() returns trigger as $$
   begin
     update profile
