@@ -34,20 +34,25 @@ drop function if exists create_tenant_schema;
       declare
         mapping_role_id uuid;
         role_record record;
+        permission_result boolean;
       begin
+        permission_result := false;
         for mapping_role_id in (select role_profile_mapping.role_id from role_profile_mapping where role_profile_mapping.profile_id = input_profile_id) loop
           -- find all role records associated with the current role_id
           for role_record in (select * from role where role.id = mapping_role_id) loop
             if operation = 'SELECT' then
-              return role_record.can_read_roles;
+              permission_result := role_record.can_read_roles;
             elseif operation = 'UPDATE' then
-              return role_record.can_update_roles;
+              permission_result := role_record.can_update_roles;
             elseif operation = 'INSERT' then
-              return role_record.can_insert_roles;
+              permission_result := role_record.can_insert_roles;
             elseif operation = 'DELETE' then
-              return role_record.can_delete_roles;
+              permission_result := role_record.can_delete_roles;
             else
               raise exception 'got bad operation type';
+            end if;
+            if permission_result = true then
+              return true;
             end if;
           end loop;
         end loop;
@@ -60,20 +65,25 @@ drop function if exists create_tenant_schema;
       declare
         mapping_role_id uuid;
         role_permission_record record;
+        permission_result boolean;
       begin
+        permission_result := false;
         for mapping_role_id in (select role_profile_mapping.role_id from role_profile_mapping where role_profile_mapping.profile_id = input_profile_id) loop
           -- find all role_permission records associated with the current role_id
           for role_permission_record in (select * from role_permission where role_permission.role_id = mapping_role_id and role_permission.table_name = wanted_table_name) loop
             if operation = 'SELECT' then
-              return role_permission_record.can_read;
+              permission_result := role_permission_record.can_read;
             elseif operation = 'UPDATE' then
-              return role_permission_record.can_update;
+              permission_result := role_permission_record.can_update;
             elseif operation = 'INSERT' then
-              return role_permission_record.can_create;
+              permission_result := role_permission_record.can_create;
             elseif operation = 'DELETE' then
-              return role_permission_record.can_delete;
+              permission_result := role_permission_record.can_delete;
             else
               raise exception 'got bad operation type';
+            end if;
+            if permission_result = true then
+              return true;
             end if;
           end loop;
         end loop;
@@ -86,6 +96,7 @@ drop function if exists create_tenant_schema;
       declare
         profile_permission_item record;
       begin
+        -- there should only ever be one profile_permission row with the same profile_id and row_id columns
         if exists (select 1 from profile_permission where profile_permission.profile_id = input_profile_id and profile_permission.row_id = input_row_id and profile_permission.table_name = wanted_table_name) then
           select * into profile_permission_item from profile_permission where profile_permission.profile_id = input_profile_id and profile_permission.row_id = input_row_id and profile_permission.table_name = wanted_table_name;
           if operation = 'SELECT' then
