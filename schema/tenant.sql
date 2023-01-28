@@ -46,7 +46,7 @@ drop function if exists create_tenant_schema;
           end loop;
         end loop;
         return false;
-      end; $$ language plpgsql security definer set search_path = search_path;
+      end; $$ language plpgsql security definer set search_path = schema_path;
 
     -- function to check permissions associated with the user's roles
     drop function if exists check_role_permission;
@@ -77,7 +77,7 @@ drop function if exists create_tenant_schema;
           end loop;
         end loop;
         return false;
-      end; $$ language plpgsql security definer set search_path = search_path;
+      end; $$ language plpgsql security definer set search_path = schema_path;
 
     create type if not exists check_profile_permission_result AS ENUM ('whitelisted', 'blacklisted', 'none');
     -- function to check profile permissions when doing update/insert/delete on a row
@@ -109,7 +109,7 @@ drop function if exists create_tenant_schema;
           end if;
         end if;
         return 'none';
-      end; $$ language plpgsql security definer set search_path = search_path;
+      end; $$ language plpgsql security definer set search_path = schema_path;
 
     -- function which combines logic for checking permissions based on profile-level permissions and role-level permissions.
     -- if profile_permissions has a row describing a permission, it takes precedence and the query should be allowed or
@@ -127,7 +127,7 @@ drop function if exists create_tenant_schema;
         else
           return check_role_permission(input_profile_id, wanted_table_name, operation);
         end if;
-      end; $$ language plpgsql security definer set search_path = search_path;
+      end; $$ language plpgsql security definer set search_path = schema_path;
 
     -- create row in meta tenant table to store information about the created schema
     insert into meta.tenant(id, schema_path, owner_profile_id)
