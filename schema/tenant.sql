@@ -202,6 +202,7 @@ drop function if exists create_tenant_schema;
 --  if it is, take the json schema and generate typescript types with it
 
     -- TODO: write function which checks if this already exists or not before inserting
+    -- TODO: this is just a few properties from one of the qbo objects to test inserting json strings into columns
     insert into meta.json_schema_store(table_name, table_column, json_schema) values ('qbo_customer', 'table_data', E'{
        "type": "object",
        "properties": {
