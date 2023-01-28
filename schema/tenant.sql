@@ -129,8 +129,8 @@ drop function if exists create_tenant_schema;
       end; $$ language plpgsql security definer set search_path = schema_path;
 
     -- create row in meta tenant table to store information about the created schema
-    insert into meta.tenant(id, new_tenant_name, schema_path, owner_profile_id)
-    values (tenant_uuid, schema_path, input_owner_profile_id);
+    insert into meta.tenant(id, tenant_name, schema_path, owner_profile_id)
+    values (tenant_uuid, new_tenant_name, schema_path, input_owner_profile_id);
 
     -- create a mapping between the owner of the tenant and the tenant
     insert into meta.tenant_profile_mapping(profile_id, tenant_id)
