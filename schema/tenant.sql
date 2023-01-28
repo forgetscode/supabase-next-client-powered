@@ -90,29 +90,55 @@ drop function if exists create_tenant_schema;
         return false;
       end; $$ language plpgsql;
 
+    create type if not exists check_profile_permission_result AS ENUM ('whitelisted', 'blacklisted', 'none');
     -- function to check profile permissions when doing update/insert/delete on a row
     drop function if exists check_profile_permission;
-      create or replace function check_profile_permission(in input_profile_id uuid, in wanted_table_name text, in operation text, in input_row_id uuid) returns boolean as $$
+      create or replace function check_profile_permission(in input_profile_id uuid, in wanted_table_name text, in operation text, in input_row_id uuid) returns check_profile_permission_result as $$
       declare
         profile_permission_item record;
+        permission_result boolean;
       begin
+        permission_result := false;
         -- there should only ever be one profile_permission row with the same profile_id and row_id columns
         if exists (select 1 from profile_permission where profile_permission.profile_id = input_profile_id and profile_permission.row_id = input_row_id and profile_permission.table_name = wanted_table_name) then
           select * into profile_permission_item from profile_permission where profile_permission.profile_id = input_profile_id and profile_permission.row_id = input_row_id and profile_permission.table_name = wanted_table_name;
           if operation = 'SELECT' then
-            return profile_permission_item.can_read;
+            permission_result := profile_permission_item.can_read;
           elseif operation = 'UPDATE' then
-            return profile_permission_item.can_read;
+            permission_result := profile_permission_item.can_read;
           elseif operation = 'INSERT' then
-            return profile_permission_item.can_read;
+            permission_result := profile_permission_item.can_read;
           elseif operation = 'DELETE' then
-            return profile_permission_item.can_read;
+            permission_result := profile_permission_item.can_read;
           else
             raise exception 'got bad operation type';
           end if;
+          if permission_result = true then
+            return 'whitelisted';
+          else
+            return 'blacklisted';
+          end if;
         end if;
-        return true;
+        return 'none';
       end; $$ language plpgsql;
+
+      -- function which combines logic for checking permissions based on profile-level permissions and role-level permissions.
+      -- if profile_permissions has a row describing a permission, it takes precedence and the query should be allowed or
+      -- disallowed according to what it specifies. if there is no relevant profile_permission, check role permissions.
+      drop function if exists check_permissions;
+        create or replace function check_permissions(in input_profile_id uuid, in wanted_table_name text, in operation text, in row_id uuid) returns boolean as $$
+        declare
+          profile_permission_result check_profile_permission_result;
+        begin
+          profile_permission_result := check_profile_permission(input_profile_id, wanted_table_name, operation, row_id);
+          if profile_permission_result = 'whitelisted' then
+            return true;
+          elseif profile_permission_result = 'blacklisted' then
+            return false;
+          else
+            return check_role_permission(input_profile_id, wanted_table_name, operation);
+          end if;
+        end; $$ language plpgsql;
 
     -- create row in meta tenant table to store information about the created schema
     insert into meta.tenant(id, schema_path, owner_profile_id)
@@ -282,17 +308,9 @@ drop function if exists create_tenant_schema;
           execute format(E'
             drop policy if exists "%S_security";
             create policy "%S_security" on %I for all
-             using (
-               id is not null
-               and check_profile_permission(auth.uid(), \'%S\', TG_OP, id)
-               and check_role_permission(auth.uid(), \'%S\', TG_OP)
-             )
-             with check (
-               id is not null
-               and check_profile_permission(auth.uid(), \'%S\', TG_OP, id)
-               and check_role_permission(auth.uid(), \'%S\', TG_OP)
-             );
-          ', table_name, table_name, table_name, table_name, table_name, table_name, table_name);
+             using (id is not null and check_permissions(auth.uid(), \'%S\', TG_OP, id))
+             with check (id is not null and check_permissions(auth.uid(), \'%S\', TG_OP, id));
+          ', table_name, table_name, table_name, table_name, table_name);
         end loop;
       end; $$
   end; $$ language plpgsql;

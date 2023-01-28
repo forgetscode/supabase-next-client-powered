@@ -45,7 +45,7 @@ drop table if exists profile_private;
     admin boolean default false not null
   );
 
-create type tenant_schema_table_type AS ENUM ('auto', 'role');
+create type if not exists tenant_schema_table_type AS ENUM ('auto', 'role');
 
 -- table which stores meta information about tables in tenant schemas, like
 --  whether or not they should be included in the auto generation of
