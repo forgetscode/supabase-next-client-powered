@@ -1,12 +1,12 @@
 import { FCWithChildren } from "react";
-import { ExampleHookContextProvider } from "#/hooks/with-react-context/example-hook-with-context";
+//import { ExampleHookContextProvider } from "#/hooks/with-react-context/example-hook-with-context";
 import { UserProfileContextProvider } from "#/hooks/with-react-context/use-profile";
 import { isProduction } from "#/constants/environment";
 
 /** index of folder with files and folders containing modules which export React hooks which access React context */
 
 const hookProviders = {
-  ExampleHookContextProvider,
+  //ExampleHookContextProvider,
   UserProfileContextProvider
 };
 
